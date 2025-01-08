@@ -2,6 +2,8 @@
 import os
 import json
 import re
+import uuid
+
 import redis
 import logging
 import requests
@@ -64,6 +66,7 @@ def process_weather_data(self, cities):
     Fetch and process weather data for the given cities.
     """
     results = {}
+    task_id = getattr(self.request, 'id', None) or str(uuid.uuid4())
 
     for city in cities:
         try:
@@ -88,16 +91,14 @@ def process_weather_data(self, cities):
             region = classify_region(city)
             results[city] = {
                 "city": data["location"]["name"],
-                "country": data["location"]["country"],
-                "temperature": temp,
+                "temperature": round(temp, 1),
                 "description": data["current"]["weather_descriptions"][0],
                 "region": region,
-                "localtime": data["location"]["localtime"],
-                "humidity": data["current"]["humidity"],
             }
 
         except requests.exceptions.RequestException as e:
             self.retry(exc=e)
+            results[city] = {"error": str(e)}
 
     # Save results by region
     task_id = self.request.id
@@ -108,11 +109,13 @@ def process_weather_data(self, cities):
             grouped_results.setdefault(region, []).append(data)
 
     for region, region_data in grouped_results.items():
+        file_path = f"weather_data/{region}/"
         os.makedirs(f"weather_data/{region}", exist_ok=True)
-        with open(f"weather_data/{region}/task_{task_id}.json", "w") as f:
-            json.dump(region_data, f, indent=2)
+        with open(f"{file_path}/task_{task_id}.json", "w") as f:
+            json.dump(region_data, f, indent=2, ensure_ascii=False)
 
-    redis_client.set(task_id, json.dumps(results))
+    logging.info(f"Saving results for task {task_id} to Redis: {results}")
+    redis_client.set(task_id, json.dumps(results,  ensure_ascii=False))
     return results
 
 try:
@@ -141,8 +144,9 @@ def get_weather():
     # Normalize and clean city names
     normalized_cities = [normalize_city_name(city.strip()) for city in cities if validate_city_name(city)]
     task = process_weather_data.apply_async(args=[normalized_cities])
+    results = process_weather_data(normalized_cities)
 
-    return jsonify({"task_id": task.id}), 202
+    return jsonify({"status": "completed", "task_id": task.id, "cities": results}), 202
 
 @app.route('/tasks/<task_id>', methods=['GET'])
 def get_task_status(task_id):
