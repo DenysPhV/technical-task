@@ -13,7 +13,8 @@ import celery.states as states
 from flask import Flask, request, jsonify
 from worker import celery
 from handlers.get_api_key import get_api_key
-
+from handlers.classification import classify_region
+from handlers.normalization import normalize_city_name
 # Flask app setup
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -25,34 +26,7 @@ redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=1, decode_respo
 API_KEY = os.getenv('API_KEY', '')
 BASE_URL = "https://api.weatherstack.com/current"
 
-# TODO refactoring - bring to folder of handlers
-def normalize_city_name(city):
-    """
-    Normalize and correct city names to a standard format.
-    """
-    corrections = {
-        "Киев": "Kyiv",
-        "Londn": "London",
-        "Токио": "Tokyo"
-    }
-    return corrections.get(city, city)
-
-# TODO refactoring - bring to folder of handlers
-def classify_region(city):
-    """
-    Classify city by its geographic region.
-    """
-    region_mapping = {
-        "Europe": ["Kyiv", "London", "Paris"],
-        "Asia": ["Tokyo", "Beijing", "Seoul"],
-        "America": ["New York", "Los Angeles", "Chicago"],
-    }
-    for region, cities in region_mapping.items():
-        if city in cities:
-            return region
-    return "Other"
-
-# TODO refactoring - bring to folder of celery-queue
+# TODO refactoring - bring to folder of celery-queue to task.py
 @celery.task(bind=True, max_retries=3, default_retry_delay=60)
 def process_weather_data(self, cities):
     """
@@ -134,14 +108,13 @@ def get_weather():
         return jsonify({"error": "Invalid input. Please provide a list of city names."}), 400
 
     def validate_city_name(city):
-        return re.match(r"^[a-zA-Zа-яА-Я\s-]+$", city)
+        return re.match(r"^[a-zA-Zа-яА-ЯёЁ'\\s-]+$", city)
 
     # Normalize and clean city names
     normalized_cities = [normalize_city_name(city.strip()) for city in cities if validate_city_name(city)]
     task = process_weather_data.apply_async(args=[normalized_cities])
-    results = process_weather_data(normalized_cities)
 
-    return jsonify({"status": "completed", "task_id": task.id, "cities": results}), 202
+    return jsonify({"status": "completed", "task_id": task.id}), 202
 
 @app.route('/tasks/<task_id>', methods=['GET'])
 def get_task_status(task_id):

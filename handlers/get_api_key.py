@@ -1,6 +1,6 @@
 import os
 
-API_KEY = os.getenv('API_KEY', '')
+API_KEY = os.getenv('API_KEY', '').split('.')
 
 def get_api_key():
     """
