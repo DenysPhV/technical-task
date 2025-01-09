@@ -12,11 +12,12 @@ import celery.states as states
 
 from flask import Flask, request, jsonify
 from worker import celery
-from handlers import get_api_key
+from handlers.get_api_key import get_api_key
 
 # Flask app setup
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 celery.conf.update(app.config)
 redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=1, decode_responses=True)
@@ -24,7 +25,7 @@ redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=1, decode_respo
 API_KEY = os.getenv('API_KEY', '')
 BASE_URL = "https://api.weatherstack.com/current"
 
-# TODO bring to folder of handlers
+# TODO refactoring - bring to folder of handlers
 def normalize_city_name(city):
     """
     Normalize and correct city names to a standard format.
@@ -36,7 +37,7 @@ def normalize_city_name(city):
     }
     return corrections.get(city, city)
 
-# TODO bring to folder of handlers
+# TODO refactoring - bring to folder of handlers
 def classify_region(city):
     """
     Classify city by its geographic region.
@@ -51,7 +52,7 @@ def classify_region(city):
             return region
     return "Other"
 
-# TODO bring to folder of process_weather_data
+# TODO refactoring - bring to folder of celery-queue
 @celery.task(bind=True, max_retries=3, default_retry_delay=60)
 def process_weather_data(self, cities):
     """
@@ -61,7 +62,7 @@ def process_weather_data(self, cities):
 
     for city in cities:
         try:
-            api_key = get_api_key
+            api_key = get_api_key()
             response = requests.get(
                 f"{BASE_URL}?access_key={api_key}&query={city}"
             )

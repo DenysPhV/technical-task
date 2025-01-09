@@ -1,0 +1,14 @@
+[
+  {
+    "city": "Kyiv",
+    "temperature": 3,
+    "description": "Overcast ",
+    "region": "Europe"
+  },
+  {
+    "city": "London",
+    "temperature": 1,
+    "description": "Partly cloudy",
+    "region": "Europe"
+  }
+]
