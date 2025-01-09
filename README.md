@@ -27,12 +27,12 @@ docker-compose down
 - [x] Returns a list of cities and their data for a given region.
 - [x] Reads results from files weather_data/<region>/.
 
-### Обробка API-відповідей
+### Processing API responses
 - [x] Processing logic takes into account API errors.
 - [x] Invalid data is filtered (temperature, no keys).
 - [x] Results are grouped by region.
 
-### Вимоги
+### Requirements
 - [x] API limits and errors factored through Celery with option max_retries.
 - [x] Support for cities in multiple languages with name fixes.
 - [x] Saving results to Redis and the file system.
