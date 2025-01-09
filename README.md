@@ -14,25 +14,25 @@ docker-compose down
 
 # Functionality:
 ### POST /weather 
-- [x] Приймає список міст у JSON-запиті.
-- [x] Нормалізує імена міст.
-- [x] Ініціалізує асинхронне завдання через Celery.
-- [x] Повертає task_id і результати одразу (хоча це виконується двічі: один раз асинхронно і один раз синхронно).
+- [x] Accepts the list of cities in the JSON request.
+- [x] Normalizes city names.
+- [x] Initializes an asynchronous task via Celery.
+- [x] Returns task_id and results at once.
 
 ### GET /tasks/<task_id>
-- [x] Перевіряє статус завдання (running, completed, failed).
-- [x] Повертає результат з Redis, якщо завдання завершено.
+- [x] Checks the status of the job (running, completed, failed).
+- [x] Returns a result from Redis if the task is completed.
 
 ### GET /results/<region>
-- [x] Повертає список міст і їхні дані для заданого регіону.
-- [x] Зчитує результати з файлів weather_data/<region>/.
+- [x] Returns a list of cities and their data for a given region.
+- [x] Reads results from files weather_data/<region>/.
 
 ### Обробка API-відповідей
-- [x] Логіка обробки враховує помилки API.
-- [x] Фільтруються некоректні дані (температура, відсутні ключі).
-- [x] Результати групуються за регіонами.
+- [x] Processing logic takes into account API errors.
+- [x] Invalid data is filtered (temperature, no keys).
+- [x] Results are grouped by region.
 
 ### Вимоги
-- [x] Ліміти API і помилки враховані через Celery з параметром max_retries.
-- [x] Підтримка міст у кількох мовах із виправленням помилок у назвах.
-- [x] Збереження результатів у Redis і у файловій системі.
+- [x] API limits and errors factored through Celery with option max_retries.
+- [x] Support for cities in multiple languages with name fixes.
+- [x] Saving results to Redis and the file system.
