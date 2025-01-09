@@ -1,14 +1,14 @@
 [
   {
     "city": "Kyiv",
-    "temperature": 4,
-    "description": "Light drizzle",
+    "temperature": 2,
+    "description": "Sunny",
     "region": "Europe"
   },
   {
     "city": "London",
-    "temperature": 2,
-    "description": "Snow",
+    "temperature": 0,
+    "description": "Mist",
     "region": "Europe"
   }
 ]

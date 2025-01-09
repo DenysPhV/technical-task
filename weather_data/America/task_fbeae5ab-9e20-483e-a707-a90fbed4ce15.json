@@ -1,8 +1,8 @@
 [
   {
     "city": "New York",
-    "temperature": -3,
-    "description": "Partly cloudy",
+    "temperature": -5,
+    "description": "Overcast",
     "region": "America"
   }
 ]
